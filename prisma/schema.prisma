@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DataWQ {
+  id         Int      @id @default(autoincrement())
+  ph          String?
+  tds         String?
+  temp        String?
+  turbidity   String?
+  ec          String?
+  waktu_masuk String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("datawqs")
+}
+
+model Settings {
+  id                   String   @id @default(uuid())
+  userId               String   @default("default")
+  notificationsEnabled Boolean  @default(true)
+  pushEnabled          Boolean  @default(true)
+  warningThreshold     Int      @default(600)
+  dangerThreshold      Int      @default(1000)
+  theme                String   @default("dark")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([userId])
+  @@map("settings")
+}

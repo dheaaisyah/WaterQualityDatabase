@@ -1,0 +1,10 @@
+prisma/.env
+.env
+.env.migration
+.env.backup
+node_modules/
+coverage/
+scripts/
+test/
+.env.migration.example
+dist/
