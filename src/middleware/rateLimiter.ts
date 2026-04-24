@@ -1,20 +1,20 @@
 import rateLimit from 'express-rate-limit';
 
 export const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100, 
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: {
         success: false,
         message: '[RATE LIMIT] Terlalu banyak request dari IP ini, silakan coba lagi nanti.',
     },
-    standardHeaders: true, 
-    legacyHeaders: false, 
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 
 export const createLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 20, 
+    windowMs: 15 * 60 * 1000,
+    max: 20,
     message: {
         success: false,
         message: '[RATE LIMIT] Terlalu banyak percobaan pembuatan data. Silakan tunggu beberapa saat.',

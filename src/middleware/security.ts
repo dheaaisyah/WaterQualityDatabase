@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 
-export const validateAqmsInput = (
+export const validateWQInput = (
     req: Request,
     res: Response,
     next: NextFunction
 ): void => {
     try {
-        const { co2, suhu, humidity } = req.body;
+        const { ph, suhu, ec, tds, turbidity } = req.body;
 
-        if (!co2 && !suhu && !humidity) {
+        if (!ph && !suhu && !ec && !tds && !turbidity) {
             res.status(400).json({
                 success: false,
-                message: '[VALIDATION] Minimal satu field harus diisi (co2, suhu, atau humidity)',
+                message: '[VALIDATION] Minimal satu field harus diisi (ph, suhu, ec, tds, atau turbidity)',
             });
             return;
         }
@@ -19,9 +19,11 @@ export const validateAqmsInput = (
         // Validasi panjang maksimal untuk mencegah buffer overflow
         const maxLength = 100;
         if (
-            (co2 && co2.length > maxLength) ||
+            (ph && ph.length > maxLength) ||
             (suhu && suhu.length > maxLength) ||
-            (humidity && humidity.length > maxLength)
+            (ec && ec.length > maxLength) ||
+            (tds && tds.length > maxLength) ||
+            (turbidity && turbidity.length > maxLength)
         ) {
             res.status(400).json({
                 success: false,
@@ -33,9 +35,11 @@ export const validateAqmsInput = (
         // Validasi karakter berbahaya (SQL Injection, XSS)
         const dangerousPattern = /[<>\"'`;(){}[\]\\]/;
         if (
-            (co2 && dangerousPattern.test(co2)) ||
+            (ph && dangerousPattern.test(ph)) ||
             (suhu && dangerousPattern.test(suhu)) ||
-            (humidity && dangerousPattern.test(humidity))
+            (ec && dangerousPattern.test(ec)) ||
+            (tds && dangerousPattern.test(tds)) ||
+            (turbidity && dangerousPattern.test(turbidity))
         ) {
             res.status(400).json({
                 success: false,
@@ -45,9 +49,11 @@ export const validateAqmsInput = (
         }
 
         // Sanitasi input - trim whitespace
-        if (co2) req.body.co2 = co2.trim();
+        if (ph) req.body.ph = ph.trim();
         if (suhu) req.body.suhu = suhu.trim();
-        if (humidity) req.body.humidity = humidity.trim();
+        if (ec) req.body.ec = ec.trim();
+        if (tds) req.body.tds = tds.trim();
+        if (turbidity) req.body.turbidity = turbidity.trim();
 
         next();
     } catch (error) {

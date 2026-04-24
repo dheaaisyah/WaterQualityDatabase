@@ -12,7 +12,7 @@ export class SensorHandler {
   async getCurrentSensor(req: Request, res: Response): Promise<void> {
     try {
       const data = await this.sensorService.getCurrentSensor();
-      
+
       if (!data) {
         res.status(404).json({
           success: false,
@@ -38,7 +38,7 @@ export class SensorHandler {
   async getSensorsByRange(req: Request, res: Response): Promise<void> {
     try {
       const range = req.query.range as string || '1h';
-      
+
       if (!['1h', '8h', '24h'].includes(range)) {
         res.status(400).json({
           success: false,

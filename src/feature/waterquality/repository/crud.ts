@@ -4,35 +4,35 @@ import { HistoryQueryDto } from "../dto/sensor.dto";
 import moment from "moment-timezone";
 
 export class CrudRepository {
-  async createData(data:CreateDto) {
+  async createData(data: CreateDto) {
     try {
-        const newData = await prisma.dataWQ.create({
-            data: {
-                ph: data.ph,
-                suhu: data.suhu,
-                ec: data.ec,
-                tds: data.tds,
-                turbidity: data.turbidity,
-            }
-        })
-        return newData
+      const newData = await prisma.dataWQ.create({
+        data: {
+          ph: data.ph,
+          suhu: data.suhu,
+          ec: data.ec,
+          tds: data.tds,
+          turbidity: data.turbidity,
+        }
+      })
+      return newData
     } catch (error) {
-        console.error("[FAILED] Creating Aqms Data : ", error);
-        throw new Error(`[ERROR] Creating Aqms data ${(error as Error).message}`);
+      console.error("[FAILED] Creating Aqms Data : ", error);
+      throw new Error(`[ERROR] Creating Aqms data ${(error as Error).message}`);
     }
   }
-  
-  async queryNewData(){
+
+  async queryNewData() {
     try {
-        const newData = await prisma.dataWQ.findFirst({
-            orderBy: {
-                createdAt: "desc",
-            },
-        })
-        return newData
+      const newData = await prisma.dataWQ.findFirst({
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+      return newData
     } catch (error) {
-        console.error("[FAILED] Fetch data Aqms", error);
-        throw new Error(`[ERROR] Fetch Data Aqms ${(error as Error).message}`);
+      console.error("[FAILED] Fetch data Aqms", error);
+      throw new Error(`[ERROR] Fetch Data Aqms ${(error as Error).message}`);
     }
   }
 

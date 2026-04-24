@@ -7,19 +7,19 @@ export class CrudService {
         this.crudRepository = new CrudRepository()
     }
     async createData(data: CreateDto) {
-        try{
+        try {
             const newData = await this.crudRepository.createData(data)
             return newData
-        }catch(e){
+        } catch (e) {
             console.error("[FAILED] Creating Aqms Data : ", e);
             throw new Error(`[ERROR] Creating Aqms data ${(e as Error).message}`);
         }
-    }   
+    }
     async queryNewData() {
-        try{
+        try {
             const newData = await this.crudRepository.queryNewData()
             return newData
-        }catch(e){
+        } catch (e) {
             console.error("[FAILED] Fetch data Aqms", e);
             throw new Error(`[ERROR] Fetch Data Aqms ${(e as Error).message}`);
         }

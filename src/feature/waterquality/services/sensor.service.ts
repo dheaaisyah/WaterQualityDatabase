@@ -13,9 +13,9 @@ export class SensorService {
   // Calculate status based on pH levels
   private calculateStatus(phValue: string | null): 'safe' | 'warning' | 'danger' {
     if (!phValue) return 'safe';
-    
+
     const ph = parseFloat(phValue);
-    
+
     if (isNaN(ph)) return 'safe';
     if (ph >= 6.5 && ph <= 8.5) return 'safe';
     if ((ph >= 6.0 && ph < 6.5) || (ph > 8.5 && ph <= 9.0)) return 'warning';
@@ -63,7 +63,7 @@ export class SensorService {
   async getHistory(filters: HistoryQueryDto) {
     try {
       const { data, total } = await this.crudRepository.getHistoryWithFilters(filters);
-      
+
       // Filter by status if specified
       let filteredData = data;
       if (filters.status && filters.status !== 'all') {
@@ -90,7 +90,7 @@ export class SensorService {
   async getHistoryChart(query: ChartQueryDto) {
     try {
       const data = await this.crudRepository.getHistoryForChart(query.range, query.interval);
-      
+
       // Auto-calculate interval if not provided
       let intervalMinutes: number;
       if (query.interval) {
@@ -151,7 +151,7 @@ export class SensorService {
     data.forEach((sensor: DataWQ) => {
       const timestamp = moment(sensor.createdAt);
       const intervalKey = timestamp.startOf('hour').format('YYYY-MM-DD HH:00:00');
-      
+
       if (!grouped[intervalKey]) {
         grouped[intervalKey] = [];
       }

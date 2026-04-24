@@ -3,7 +3,7 @@ import { CrudHandler } from '../handler/crud_handler';
 import { SensorHandler } from '../handler/sensor.handler';
 import { SettingsHandler } from '../handler/settings.handler';
 import { createLimiter, queryLimiter } from '../../../middleware/rateLimiter';
-import { validateAqmsInput, logRequest, validateRequestSize } from '../../../middleware/security';
+import { validateWQInput, logRequest, validateRequestSize } from '../../../middleware/security';
 
 const router = Router();
 const crudHandler = new CrudHandler();
@@ -16,7 +16,7 @@ router.post(
     logRequest,
     createLimiter,
     validateRequestSize,
-    validateAqmsInput,
+    validateWQInput,
     (req, res) => crudHandler.createData(req, res)
 );
 
