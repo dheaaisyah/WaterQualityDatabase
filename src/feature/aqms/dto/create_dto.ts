@@ -1,7 +1,5 @@
 export class CreateDto {
-    ph: string = 'null';
+    co2: string = 'null';
     suhu: string = 'null';
-    ec: string = 'null';
-    tds: string = 'null';
-    turbidity: string = 'null';
+    humidity: string = 'null';
 }

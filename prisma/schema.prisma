@@ -41,3 +41,14 @@ model Settings {
   @@unique([userId])
   @@map("settings")
 }
+
+model Aqms {
+  id          Int      @id @default(autoincrement())
+  co2         String?
+  suhu        String?
+  humidity    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("aqms")
+}

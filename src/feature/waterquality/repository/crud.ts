@@ -6,11 +6,13 @@ import moment from "moment-timezone";
 export class CrudRepository {
   async createData(data:CreateDto) {
     try {
-        const newData = await prisma.aqms.create({
+        const newData = await prisma.dataWQ.create({
             data: {
-                co2: data.co2,
+                ph: data.ph,
                 suhu: data.suhu,
-                humidity: data.humidity,
+                ec: data.ec,
+                tds: data.tds,
+                turbidity: data.turbidity,
             }
         })
         return newData
@@ -22,7 +24,7 @@ export class CrudRepository {
   
   async queryNewData(){
     try {
-        const newData = await prisma.aqms.findFirst({
+        const newData = await prisma.dataWQ.findFirst({
             orderBy: {
                 createdAt: "desc",
             },
@@ -53,7 +55,7 @@ export class CrudRepository {
           startTime = moment(now).subtract(1, 'hours').toDate();
       }
 
-      const data = await prisma.aqms.findMany({
+      const data = await prisma.dataWQ.findMany({
         where: {
           createdAt: {
             gte: startTime,
@@ -85,7 +87,7 @@ export class CrudRepository {
         }
       }
 
-      const data = await prisma.aqms.findMany({
+      const data = await prisma.dataWQ.findMany({
         where,
         orderBy: {
           createdAt: 'desc',
@@ -94,7 +96,7 @@ export class CrudRepository {
         skip: filters.offset,
       });
 
-      const total = await prisma.aqms.count({ where });
+      const total = await prisma.dataWQ.count({ where });
 
       return { data, total };
     } catch (error) {
@@ -122,7 +124,7 @@ export class CrudRepository {
           startTime = moment(now).subtract(24, 'hours').toDate();
       }
 
-      const data = await prisma.aqms.findMany({
+      const data = await prisma.dataWQ.findMany({
         where: {
           createdAt: {
             gte: startTime,
@@ -154,7 +156,7 @@ export class CrudRepository {
         }
       }
 
-      const data = await prisma.aqms.findMany({
+      const data = await prisma.dataWQ.findMany({
         where,
         orderBy: {
           createdAt: 'desc',
@@ -170,7 +172,7 @@ export class CrudRepository {
 
   async getHistoryForExport(startDate: string, endDate: string) {
     try {
-      const data = await prisma.aqms.findMany({
+      const data = await prisma.dataWQ.findMany({
         where: {
           createdAt: {
             gte: new Date(startDate),
