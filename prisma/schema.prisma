@@ -14,10 +14,10 @@ datasource db {
 }
 
 model DataWQ {
-  id         Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   ph          String?
   tds         String?
-  temp        String?
+  suhu        String?
   turbidity   String?
   ec          String?
   waktu_masuk String?

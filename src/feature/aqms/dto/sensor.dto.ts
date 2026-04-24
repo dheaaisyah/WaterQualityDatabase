@@ -1,7 +1,9 @@
 export class CreateDto {
-    co2: string = 'null';
+    ph: string = 'null';
     suhu: string = 'null';
-    humidity: string = 'null';
+    ec: string = 'null';
+    tds: string = 'null';
+    turbidity: string = 'null';
 }
 
 export class SensorRangeQueryDto {

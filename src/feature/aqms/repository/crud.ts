@@ -8,9 +8,11 @@ export class CrudRepository {
     try {
         const newData = await prisma.aqms.create({
             data: {
-                co2: data.co2,
+                ph: data.ph,
                 suhu: data.suhu,
-                humidity: data.humidity,
+                ec: data.ec,
+                tds: data.tds,
+                turbidity: data.turbidity,
             }
         })
         return newData
