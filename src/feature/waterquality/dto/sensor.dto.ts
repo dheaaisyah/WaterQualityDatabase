@@ -14,7 +14,7 @@ export class HistoryQueryDto {
     startDate?: string;
     endDate?: string;
     status?: 'all' | 'safe' | 'warning' | 'danger' = 'all';
-    limit: number = 50;
+    limit: number = 1500;
     offset: number = 0;
 }
 
