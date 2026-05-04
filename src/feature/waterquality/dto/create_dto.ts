@@ -1,7 +1,7 @@
 export class CreateDto {
-    ph: string = 'null';
-    suhu: string = 'null';
-    ec: string = 'null';
-    tds: string = 'null';
-    turbidity: string = 'null';
+    ph: number = 0;
+    suhu: number = 0;
+    ec: number = 0;
+    tds: number = 0;
+    turbidity: number = 0;
 }

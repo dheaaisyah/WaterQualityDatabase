@@ -10,11 +10,11 @@ export class SensorService {
     this.crudRepository = new CrudRepository();
   }
 
-  // Calculate status based on pH levels
-  private calculateStatus(phValue: string | null): 'safe' | 'warning' | 'danger' {
-    if (!phValue) return 'safe';
+  // Gunakan tipe 'any' sementara untuk mengabaikan memori tipe lama dari Prisma
+  private calculateStatus(phValue: any): 'safe' | 'warning' | 'danger' {
+    if (phValue === null || phValue === undefined) return 'safe';
 
-    const ph = parseFloat(phValue);
+    const ph = Number(phValue); // Paksa menjadi angka secara eksplisit
 
     if (isNaN(ph)) return 'safe';
     if (ph >= 6.5 && ph <= 8.5) return 'safe';
@@ -23,7 +23,7 @@ export class SensorService {
   }
 
   // Format sensor data with status
-  private formatSensorData(sensor: DataWQ | null) {
+  private formatSensorData(sensor: any) {
     if (!sensor) {
       return null;
     }
@@ -31,12 +31,15 @@ export class SensorService {
     return {
       sensorId: sensor.id,
       timestamp: sensor.createdAt.toISOString(),
-      ph: parseFloat(sensor.ph || '0'),
-      suhu: parseFloat(sensor.suhu || '0'),
-      ec: parseFloat(sensor.ec || '0'),
-      tds: parseFloat(sensor.tds || '0'),
-      turbidity: parseFloat(sensor.turbidity || '0'),
+      // Paksa semua data yang keluar menjadi Number agar aman
+      ph: Number(sensor.ph || 0),
+      suhu: Number(sensor.suhu || 0),
+      ec: Number(sensor.ec || 0),
+      tds: Number(sensor.tds || 0),
+      turbidity: Number(sensor.turbidity || 0),
       status: this.calculateStatus(sensor.ph),
+      isValid: sensor.isValid ?? true,
+      errorCode: sensor.errorCode ?? null,
     };
   }
 
@@ -53,7 +56,7 @@ export class SensorService {
   async getSensorsByRange(range: string) {
     try {
       const sensors = await this.crudRepository.getSensorsByRange(range);
-      return sensors.map((sensor: DataWQ) => this.formatSensorData(sensor));
+      return sensors.map((sensor: any) => this.formatSensorData(sensor));
     } catch (error) {
       console.error("[FAILED] Get sensors by range", error);
       throw new Error(`[ERROR] Get sensors by range ${(error as Error).message}`);
@@ -64,16 +67,15 @@ export class SensorService {
     try {
       const { data, total } = await this.crudRepository.getHistoryWithFilters(filters);
 
-      // Filter by status if specified
       let filteredData = data;
       if (filters.status && filters.status !== 'all') {
-        filteredData = data.filter((sensor: DataWQ) => {
+        filteredData = data.filter((sensor: any) => {
           const status = this.calculateStatus(sensor.ph);
           return status === filters.status;
         });
       }
 
-      const formattedData = filteredData.map((sensor: DataWQ) => this.formatSensorData(sensor));
+      const formattedData = filteredData.map((sensor: any) => this.formatSensorData(sensor));
 
       return {
         data: formattedData,
@@ -91,40 +93,23 @@ export class SensorService {
     try {
       const data = await this.crudRepository.getHistoryForChart(query.range, query.interval);
 
-      // Auto-calculate interval if not provided
       let intervalMinutes: number;
       if (query.interval) {
         switch (query.interval) {
-          case '1h':
-            intervalMinutes = 60;
-            break;
-          case '4h':
-            intervalMinutes = 240;
-            break;
-          case '1d':
-            intervalMinutes = 1440;
-            break;
-          default:
-            intervalMinutes = 60;
+          case '1h': intervalMinutes = 60; break;
+          case '4h': intervalMinutes = 240; break;
+          case '1d': intervalMinutes = 1440; break;
+          default: intervalMinutes = 60;
         }
       } else {
-        // Auto-calculate based on range
         switch (query.range) {
-          case '24h':
-            intervalMinutes = 60; // 1 hour intervals
-            break;
-          case '7d':
-            intervalMinutes = 240; // 4 hour intervals
-            break;
-          case '30d':
-            intervalMinutes = 1440; // 1 day intervals
-            break;
-          default:
-            intervalMinutes = 60;
+          case '24h': intervalMinutes = 60; break;
+          case '7d': intervalMinutes = 240; break;
+          case '30d': intervalMinutes = 1440; break;
+          default: intervalMinutes = 60;
         }
       }
 
-      // Aggregate data by interval
       const aggregated = this.aggregateByInterval(data, intervalMinutes);
 
       return {
@@ -145,10 +130,11 @@ export class SensorService {
     return '1h';
   }
 
-  private aggregateByInterval(data: DataWQ[], intervalMinutes: number) {
-    const grouped: { [key: string]: DataWQ[] } = {};
+  private aggregateByInterval(data: any[], intervalMinutes: number) {
+    const grouped: { [key: string]: any[] } = {};
+    const validData = data.filter((s: any) => s.isValid === true && Number(s.ph) > 0);
 
-    data.forEach((sensor: DataWQ) => {
+    validData.forEach((sensor: any) => {
       const timestamp = moment(sensor.createdAt);
       const intervalKey = timestamp.startOf('hour').format('YYYY-MM-DD HH:00:00');
 
@@ -160,11 +146,13 @@ export class SensorService {
 
     return Object.keys(grouped).map((key: string) => {
       const sensors = grouped[key];
-      const avgPh = sensors.reduce((sum: number, s: DataWQ) => sum + parseFloat(s.ph || '0'), 0) / sensors.length;
-      const avgSuhu = sensors.reduce((sum: number, s: DataWQ) => sum + parseFloat(s.suhu || '0'), 0) / sensors.length;
-      const avgEc = sensors.reduce((sum: number, s: DataWQ) => sum + parseFloat(s.ec || '0'), 0) / sensors.length;
-      const avgTds = sensors.reduce((sum: number, s: DataWQ) => sum + parseFloat(s.tds || '0'), 0) / sensors.length;
-      const avgTurbidity = sensors.reduce((sum: number, s: DataWQ) => sum + parseFloat(s.turbidity || '0'), 0) / sensors.length;
+
+      // Tambahkan fungsi Number() di setiap variabel agar proses matematika berjalan mulus
+      const avgPh = sensors.reduce((sum: number, s: any) => sum + Number(s.ph || 0), 0) / sensors.length;
+      const avgSuhu = sensors.reduce((sum: number, s: any) => sum + Number(s.suhu || 0), 0) / sensors.length;
+      const avgEc = sensors.reduce((sum: number, s: any) => sum + Number(s.ec || 0), 0) / sensors.length;
+      const avgTds = sensors.reduce((sum: number, s: any) => sum + Number(s.tds || 0), 0) / sensors.length;
+      const avgTurbidity = sensors.reduce((sum: number, s: any) => sum + Number(s.turbidity || 0), 0) / sensors.length;
 
       return {
         timestamp: key,
@@ -173,14 +161,15 @@ export class SensorService {
         ec: Math.round(avgEc * 10) / 10,
         tds: Math.round(avgTds * 10) / 10,
         turbidity: Math.round(avgTurbidity * 10) / 10,
-        status: this.calculateStatus(avgPh.toString()),
+        status: this.calculateStatus(avgPh),
       };
     });
   }
 
   async getStatistics(query: StatsQueryDto) {
     try {
-      const data = await this.crudRepository.getStatistics(query.startDate, query.endDate);
+      const rawData = await this.crudRepository.getStatistics(query.startDate, query.endDate);
+      const data = rawData.filter((s: any) => s.isValid === true && (s.ph > 0 || s.turbidity > 0));
 
       if (data.length === 0) {
         return {
@@ -194,14 +183,15 @@ export class SensorService {
         };
       }
 
-      const phValues = data.map((s: DataWQ) => parseFloat(s.ph || '0')).filter((v: number) => !isNaN(v));
-      const suhuValues = data.map((s: DataWQ) => parseFloat(s.suhu || '0')).filter((v: number) => !isNaN(v));
-      const ecValues = data.map((s: DataWQ) => parseFloat(s.ec || '0')).filter((v: number) => !isNaN(v));
-      const tdsValues = data.map((s: DataWQ) => parseFloat(s.tds || '0')).filter((v: number) => !isNaN(v));
-      const turbidityValues = data.map((s: DataWQ) => parseFloat(s.turbidity || '0')).filter((v: number) => !isNaN(v));
+      // Paksa konversi ke Number sebelum mem-filter nilai NaN
+      const phValues = data.map((s: any) => Number(s.ph || 0)).filter((v: number) => !isNaN(v));
+      const suhuValues = data.map((s: any) => Number(s.suhu || 0)).filter((v: number) => !isNaN(v));
+      const ecValues = data.map((s: any) => Number(s.ec || 0)).filter((v: number) => !isNaN(v));
+      const tdsValues = data.map((s: any) => Number(s.tds || 0)).filter((v: number) => !isNaN(v));
+      const turbidityValues = data.map((s: any) => Number(s.turbidity || 0)).filter((v: number) => !isNaN(v));
 
       const statusDistribution = { safe: 0, warning: 0, danger: 0 };
-      data.forEach((sensor: DataWQ) => {
+      data.forEach((sensor: any) => {
         const status = this.calculateStatus(sensor.ph);
         statusDistribution[status]++;
       });
@@ -244,7 +234,7 @@ export class SensorService {
   async exportHistory(query: ExportQueryDto) {
     try {
       const data = await this.crudRepository.getHistoryForExport(query.startDate, query.endDate);
-      const formattedData = data.map((sensor: DataWQ) => this.formatSensorData(sensor));
+      const formattedData = data.map((sensor: any) => this.formatSensorData(sensor));
 
       if (query.format === 'csv') {
         return this.convertToCSV(formattedData);

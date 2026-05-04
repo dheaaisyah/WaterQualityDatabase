@@ -1,9 +1,9 @@
 export class CreateDto {
-    ph: string = 'null';
-    suhu: string = 'null';
-    ec: string = 'null';
-    tds: string = 'null';
-    turbidity: string = 'null';
+    ph: number = 0;
+    suhu: number = 0;
+    ec: number = 0;
+    tds: number = 0;
+    turbidity: number = 0;
 }
 
 export class SensorRangeQueryDto {
@@ -43,4 +43,7 @@ export class SensorCurrentResponseDto {
     tds: number = 0;
     turbidity: number = 0;
     status: 'safe' | 'warning' | 'danger' = 'safe';
+
+    isValid: boolean = true;
+    errorCode: string | null = null;
 }

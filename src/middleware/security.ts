@@ -8,7 +8,8 @@ export const validateWQInput = (
     try {
         const { ph, suhu, ec, tds, turbidity } = req.body;
 
-        if (!ph && !suhu && !ec && !tds && !turbidity) {
+        // Cek apakah minimal ada satu data yang dikirim (menggunakan undefined agar angka 0 tetap lolos)
+        if (ph === undefined && suhu === undefined && ec === undefined && tds === undefined && turbidity === undefined) {
             res.status(400).json({
                 success: false,
                 message: '[VALIDATION] Minimal satu field harus diisi (ph, suhu, ec, tds, atau turbidity)',
@@ -16,44 +17,50 @@ export const validateWQInput = (
             return;
         }
 
-        // Validasi panjang maksimal untuk mencegah buffer overflow
-        const maxLength = 100;
-        if (
-            (ph && ph.length > maxLength) ||
-            (suhu && suhu.length > maxLength) ||
-            (ec && ec.length > maxLength) ||
-            (tds && tds.length > maxLength) ||
-            (turbidity && turbidity.length > maxLength)
-        ) {
+        // Fungsi pintar untuk mengecek tipe data
+        const validateAndSanitize = (value: any, fieldName: string) => {
+            // Jika kosong, abaikan
+            if (value === undefined || value === null) return value;
+
+            // 1. JIKA ANGKA MURNI: Langsung loloskan (Angka kebal terhadap SQL Injection/XSS)
+            if (typeof value === 'number') {
+                return value;
+            }
+
+            // 2. JIKA STRING (Teks): Lakukan pemeriksaan ketat
+            if (typeof value === 'string') {
+                const maxLength = 100;
+                if (value.length > maxLength) {
+                    throw new Error(`Panjang data ${fieldName} melebihi batas maksimal`);
+                }
+
+                const dangerousPattern = /[<>\"'`;(){}[\]\\]/;
+                if (dangerousPattern.test(value)) {
+                    throw new Error(`Input ${fieldName} mengandung karakter yang tidak aman (XSS/SQLi)`);
+                }
+
+                // Bersihkan spasi berlebih
+                return value.trim();
+            }
+
+            // Tipe data lain (boolean, array, dll) ditolak
+            throw new Error(`Format data ${fieldName} tidak valid`);
+        };
+
+        try {
+            // Terapkan fungsi pintar ke semua variabel input
+            req.body.ph = validateAndSanitize(ph, 'ph');
+            req.body.suhu = validateAndSanitize(suhu, 'suhu');
+            req.body.ec = validateAndSanitize(ec, 'ec');
+            req.body.tds = validateAndSanitize(tds, 'tds');
+            req.body.turbidity = validateAndSanitize(turbidity, 'turbidity');
+        } catch (validationError: any) {
             res.status(400).json({
                 success: false,
-                message: '[VALIDATION] Panjang data melebihi batas maksimal',
+                message: `[SECURITY] ${validationError.message}`,
             });
             return;
         }
-
-        // Validasi karakter berbahaya (SQL Injection, XSS)
-        const dangerousPattern = /[<>\"'`;(){}[\]\\]/;
-        if (
-            (ph && dangerousPattern.test(ph)) ||
-            (suhu && dangerousPattern.test(suhu)) ||
-            (ec && dangerousPattern.test(ec)) ||
-            (tds && dangerousPattern.test(tds)) ||
-            (turbidity && dangerousPattern.test(turbidity))
-        ) {
-            res.status(400).json({
-                success: false,
-                message: '[SECURITY] Input mengandung karakter yang tidak diizinkan',
-            });
-            return;
-        }
-
-        // Sanitasi input - trim whitespace
-        if (ph) req.body.ph = ph.trim();
-        if (suhu) req.body.suhu = suhu.trim();
-        if (ec) req.body.ec = ec.trim();
-        if (tds) req.body.tds = tds.trim();
-        if (turbidity) req.body.turbidity = turbidity.trim();
 
         next();
     } catch (error) {

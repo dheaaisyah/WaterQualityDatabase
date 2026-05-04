@@ -4,21 +4,24 @@ import { HistoryQueryDto } from "../dto/sensor.dto";
 import moment from "moment-timezone";
 
 export class CrudRepository {
-  async createData(data: CreateDto) {
+  async createData(data: CreateDto, isValid: boolean = true, errorCode: string | null = null) {
     try {
       const newData = await prisma.dataWQ.create({
         data: {
-          ph: data.ph,
-          suhu: data.suhu,
-          ec: data.ec,
-          tds: data.tds,
-          turbidity: data.turbidity,
+          ph: Number(data.ph),
+          suhu: Number(data.suhu),
+          ec: Number(data.ec),
+          tds: Number(data.tds),
+          turbidity: Number(data.turbidity),
+
+          isValid: isValid,
+          errorCode: errorCode,
         }
       })
       return newData
     } catch (error) {
-      console.error("[FAILED] Creating Aqms Data : ", error);
-      throw new Error(`[ERROR] Creating Aqms data ${(error as Error).message}`);
+      console.error("[FAILED] Creating Data WQ : ", error);
+      throw new Error(`[ERROR] Creating Data WQ ${(error as Error).message}`);
     }
   }
 

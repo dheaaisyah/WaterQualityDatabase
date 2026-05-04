@@ -67,11 +67,13 @@ export class SensorHandler {
 
   async getHistory(req: Request, res: Response): Promise<void> {
     try {
+      // Default to 24 hours ago if startDate is not provided
+      const defaultStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const filters: HistoryQueryDto = {
-        startDate: req.query.startDate as string,
+        startDate: (req.query.startDate as string) || defaultStartDate,
         endDate: req.query.endDate as string,
         status: (req.query.status as any) || 'all',
-        limit: parseInt(req.query.limit as string) || 1500,
+        limit: parseInt(req.query.limit as string) || 3000,
         offset: parseInt(req.query.offset as string) || 0,
       };
 

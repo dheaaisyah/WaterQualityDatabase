@@ -11,18 +11,23 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model DataWQ {
-  id          Int      @id @default(autoincrement())
-  ph          String?
-  tds         String?
-  suhu        String?
-  turbidity   String?
-  ec          String?
-  waktu_masuk String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  
+  // Menggunakan Float agar presisi untuk angka desimal (contoh: 7.21)
+  ph           Float?   
+  tds          Float?   
+  suhu         Float?   
+  turbidity    Float?   
+  ec           Float?   
+  waktu_masuk  DateTime? @default(now()) 
+  isValid      Boolean  @default(true) 
+  errorCode    String?  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("datawqs")
 }
