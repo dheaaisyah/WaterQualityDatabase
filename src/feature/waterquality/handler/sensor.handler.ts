@@ -73,7 +73,7 @@ export class SensorHandler {
         startDate: (req.query.startDate as string) || defaultStartDate,
         endDate: req.query.endDate as string,
         status: (req.query.status as any) || 'all',
-        limit: parseInt(req.query.limit as string) || 3000,
+        limit: parseInt(req.query.limit as string) || 10000,
         offset: parseInt(req.query.offset as string) || 0,
       };
 
